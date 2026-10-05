@@ -101,14 +101,20 @@ export default async function EventsPage({
                   
                   <div className="mt-auto">
                     <SaveButton eventId={event.id} isSaved={false} />
-                    <div className="flex items-center justify-between pt-4 mt-2 border-t border-white/10">
-                      <span className="text-[10px] uppercase tracking-widest text-brand-ivory/40">Mysuru Dasara 2026</span>
-                      <Link 
-                        href={`/events/${event.id}`}
-                        className="text-sm font-bold text-brand-gold hover:text-[#FFF8D6] transition-colors flex items-center gap-1"
-                      >
-                        Details <ArrowRight size={14} />
-                      </Link>
+                    
+                    <div className="pt-4 mt-2 border-t border-white/10 flex flex-col gap-1">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] uppercase tracking-widest text-brand-ivory/40">Source: {event.source || 'Mysuru Dasara 2026'}</span>
+                        <Link 
+                          href={`/events/${event.id}`}
+                          className="text-sm font-bold text-brand-gold hover:text-[#FFF8D6] transition-colors flex items-center gap-1"
+                        >
+                          Details <ArrowRight size={14} />
+                        </Link>
+                      </div>
+                      <span className="text-[9px] uppercase tracking-widest text-brand-ivory/30">
+                        Verified: {event.lastVerifiedAt ? new Date(event.lastVerifiedAt).toLocaleString() : 'Data Unavailable'}
+                      </span>
                     </div>
                   </div>
                 </div>

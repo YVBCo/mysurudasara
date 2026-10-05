@@ -286,3 +286,42 @@ export async function getSession() {
     return null;
   }
 }
+
+export async function addProduct(formData: FormData) {
+  const session = await getSession();
+  if (!session || session.role !== 'VENDOR') return { success: false, error: 'Unauthorized' };
+
+  const name = formData.get('name') as string;
+  const price = formData.get('price') as string;
+  const stock = formData.get('stock') as string;
+  
+  if (!name || !price) return { success: false, error: 'Missing fields' };
+
+  try {
+    await db.execute({
+      sql: 'INSERT INTO products (id, name, price, stock, vendor_id, created_at) VALUES (?, ?, ?, ?, ?, ?)',
+      args: [`prod-${Date.now()}`, name, price, stock || 'In Stock', session.userId, new Date().toISOString()]
+    });
+    revalidatePath('/vendor-dashboard');
+    return { success: true };
+  } catch {
+    return { success: false, error: 'Database error' };
+  }
+}
+
+export async function getProducts(vendorId: string) {
+  try {
+    const result = await db.execute({
+      sql: 'SELECT * FROM products WHERE vendor_id = ? ORDER BY created_at DESC',
+      args: [vendorId]
+    });
+    return result.rows.map(row => ({
+      id: row.id as string,
+      name: row.name as string,
+      price: row.price as string,
+      stock: row.stock as string
+    }));
+  } catch {
+    return [];
+  }
+}
