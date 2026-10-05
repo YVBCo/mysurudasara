@@ -145,7 +145,32 @@ async function migrate() {
     ]
   };
   fs.writeFileSync('official_api_mock.json', JSON.stringify(mockApiData, null, 2));
-  console.log('Created official_api_mock.json fixture.');
+  
+  // Insert Events
+  for (const ev of mockApiData.events) {
+    await db.execute({
+      sql: `
+        INSERT INTO events (id, title, description, category, start_time, end_time, venue, location, lat, lng, image, status, source_name, source_url, source_type, last_verified_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ON CONFLICT(id) DO UPDATE SET title=excluded.title
+      `,
+      args: [ev.id, ev.title, ev.description, ev.category, ev.start_time, ev.end_time, ev.venue, ev.location, ev.lat, ev.lng, ev.image, ev.status, ev.source_name, ev.source_url, ev.source_type, new Date().toISOString()]
+    });
+  }
+
+  // Insert Places
+  for (const pl of mockApiData.places) {
+    await db.execute({
+      sql: `
+        INSERT INTO places (id, name, description, category, image, distance, status, source_name, last_verified_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ON CONFLICT(id) DO UPDATE SET name=excluded.name
+      `,
+      args: [pl.id, pl.name, pl.description, pl.category, pl.image, pl.distance, pl.status, pl.source_name, new Date().toISOString()]
+    });
+  }
+
+  console.log('Created official_api_mock.json fixture and seeded tables.');
 }
 
 migrate().catch(console.error);

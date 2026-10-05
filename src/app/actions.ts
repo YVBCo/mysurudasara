@@ -5,19 +5,17 @@ import { revalidatePath } from 'next/cache';
 import { differenceInDays, formatDistanceToNow, isAfter, isBefore } from 'date-fns';
 
 function calculateStatus(startTimeStr: string, endTimeStr: string, officialStatus: string) {
-  // If the official source explicitly overrides status
   if (['DELAYED', 'CANCELLED', 'COMPLETED'].includes(officialStatus)) {
     return officialStatus;
   }
 
-  const now = new Date(); // Simulates real time. In this environment, it's Oct 5 2026.
+  const now = new Date();
   const start = new Date(startTimeStr);
   const end = new Date(endTimeStr);
   
   if (isAfter(now, end)) return "COMPLETED";
   if (isAfter(now, start) && isBefore(now, end)) return "LIVE NOW";
   
-  // If it starts within 2 hours
   const hoursUntil = (start.getTime() - now.getTime()) / (1000 * 60 * 60);
   if (hoursUntil > 0 && hoursUntil <= 2) return "STARTING SOON";
   
@@ -65,72 +63,41 @@ export async function getEvents(query?: string, category?: string) {
       lastVerifiedAt: row.last_verified_at as string,
       status: calculateStatus(row.start_time as string, row.end_time as string, row.status as string)
     }));
-  } catch (err) {
-    // VERCEL SERVERLESS FALLBACK
-    // local.db is read-only/inaccessible in Vercel Serverless without a remote Turso URL.
-    // Fallback to the ingestion fixture so the site doesn't 500.
-    const fs = await import('fs/promises');
-    const path = await import('path');
-    try {
-      const data = await fs.readFile(path.join(process.cwd(), 'official_api_mock.json'), 'utf-8');
-      const parsed = JSON.parse(data);
-      let events = parsed.events.map((row: any) => ({
-        id: row.id,
-        title: row.title,
-        description: row.description,
-        category: row.category,
-        startTime: row.start_time,
-        endTime: row.end_time,
-        venue: row.venue,
-        location: row.location,
-        lat: row.lat,
-        lng: row.lng,
-        image: row.image,
-        source: row.source_name,
-        isOfficial: row.source_type === 'OFFICIAL',
-        lastVerifiedAt: new Date().toISOString(),
-        status: calculateStatus(row.start_time, row.end_time, row.status || 'SCHEDULED')
-      }));
-      
-      if (category && category !== 'All') {
-        events = events.filter((e: any) => e.category === category);
-      }
-      if (query) {
-        events = events.filter((e: any) => e.title.toLowerCase().includes(query.toLowerCase()));
-      }
-      return events;
-    } catch {
-      return [];
-    }
+  } catch {
+    return [];
   }
 }
 
 export async function getEventById(id: string) {
-  const result = await db.execute({
-    sql: 'SELECT * FROM events WHERE id = ?',
-    args: [id]
-  });
+  try {
+    const result = await db.execute({
+      sql: 'SELECT * FROM events WHERE id = ?',
+      args: [id]
+    });
 
-  if (result.rows.length === 0) return null;
-  const row = result.rows[0];
+    if (result.rows.length === 0) return null;
+    const row = result.rows[0];
 
-  return {
-    id: row.id as string,
-    title: row.title as string,
-    description: row.description as string,
-    category: row.category as string,
-    startTime: row.start_time as string,
-    endTime: row.end_time as string,
-    venue: row.venue as string,
-    location: row.location as string,
-    lat: row.lat as number,
-    lng: row.lng as number,
-    image: row.image as string,
-    source: row.source_name as string,
-    isOfficial: row.source_type === 'OFFICIAL',
-    lastVerifiedAt: row.last_verified_at as string,
-    status: calculateStatus(row.start_time as string, row.end_time as string, row.status as string)
-  };
+    return {
+      id: row.id as string,
+      title: row.title as string,
+      description: row.description as string,
+      category: row.category as string,
+      startTime: row.start_time as string,
+      endTime: row.end_time as string,
+      venue: row.venue as string,
+      location: row.location as string,
+      lat: row.lat as number,
+      lng: row.lng as number,
+      image: row.image as string,
+      source: row.source_name as string,
+      isOfficial: row.source_type === 'OFFICIAL',
+      lastVerifiedAt: row.last_verified_at as string,
+      status: calculateStatus(row.start_time as string, row.end_time as string, row.status as string)
+    };
+  } catch {
+    return null;
+  }
 }
 
 export async function getLiveEvents() {
@@ -157,56 +124,64 @@ export async function getPlaces() {
 }
 
 export async function saveEvent(eventId: string, userId: string) {
-  const existing = await db.execute({
-    sql: 'SELECT id FROM saved_events WHERE user_id = ? AND event_id = ?',
-    args: [userId, eventId]
-  });
-
-  if (existing.rows.length === 0) {
-    await db.execute({
-      sql: 'INSERT INTO saved_events (id, user_id, event_id, created_at) VALUES (?, ?, ?, ?)',
-      args: [`save-${Date.now()}`, userId, eventId, new Date().toISOString()]
-    });
-    revalidatePath('/', 'layout');
-    return { success: true, message: "Saved to My Dasara" };
-  } else {
-    await db.execute({
-      sql: 'DELETE FROM saved_events WHERE user_id = ? AND event_id = ?',
+  try {
+    const existing = await db.execute({
+      sql: 'SELECT id FROM saved_events WHERE user_id = ? AND event_id = ?',
       args: [userId, eventId]
     });
-    revalidatePath('/', 'layout');
-    return { success: true, message: "Removed from My Dasara" };
+
+    if (existing.rows.length === 0) {
+      await db.execute({
+        sql: 'INSERT INTO saved_events (id, user_id, event_id, created_at) VALUES (?, ?, ?, ?)',
+        args: [`save-${Date.now()}`, userId, eventId, new Date().toISOString()]
+      });
+      revalidatePath('/', 'layout');
+      return { success: true, message: "Saved to My Dasara" };
+    } else {
+      await db.execute({
+        sql: 'DELETE FROM saved_events WHERE user_id = ? AND event_id = ?',
+        args: [userId, eventId]
+      });
+      revalidatePath('/', 'layout');
+      return { success: true, message: "Removed from My Dasara" };
+    }
+  } catch {
+    return { success: false, message: "Database Error" };
   }
 }
 
 export async function getSavedEvents(userId: string) {
-  const result = await db.execute({
-    sql: `
-      SELECT e.* 
-      FROM events e 
-      JOIN saved_events s ON e.id = s.event_id 
-      WHERE s.user_id = ?
-    `,
-    args: [userId]
-  });
+  try {
+    const result = await db.execute({
+      sql: `
+        SELECT e.* 
+        FROM events e 
+        JOIN saved_events s ON e.id = s.event_id 
+        WHERE s.user_id = ?
+      `,
+      args: [userId]
+    });
 
-  return result.rows.map(row => ({
-    id: row.id as string,
-    title: row.title as string,
-    description: row.description as string,
-    category: row.category as string,
-    startTime: row.start_time as string,
-    endTime: row.end_time as string,
-    venue: row.venue as string,
-    location: row.location as string,
-    lat: row.lat as number,
-    lng: row.lng as number,
-    image: row.image as string,
-    source: row.source_name as string,
-    isOfficial: row.source_type === 'OFFICIAL',
-    lastVerifiedAt: row.last_verified_at as string,
-    status: calculateStatus(row.start_time as string, row.end_time as string, row.status as string)
-  }));
+    return result.rows.map(row => ({
+      id: row.id as string,
+      title: row.title as string,
+      description: row.description as string,
+      category: row.category as string,
+      startTime: row.start_time as string,
+      endTime: row.end_time as string,
+      venue: row.venue as string,
+      location: row.location as string,
+      lat: row.lat as number,
+      lng: row.lng as number,
+      image: row.image as string,
+      source: row.source_name as string,
+      isOfficial: row.source_type === 'OFFICIAL',
+      lastVerifiedAt: row.last_verified_at as string,
+      status: calculateStatus(row.start_time as string, row.end_time as string, row.status as string)
+    }));
+  } catch {
+    return [];
+  }
 }
 
 export async function askAI(question: string) {
