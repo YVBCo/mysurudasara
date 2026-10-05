@@ -2,7 +2,9 @@ const { createClient } = require('@libsql/client');
 const fs = require('fs');
 
 async function migrate() {
-  const db = createClient({ url: 'file:local.db' });
+  const url = process.env.DATABASE_URL || 'file:local.db';
+  const authToken = process.env.DATABASE_AUTH_TOKEN;
+  const db = createClient({ url, authToken });
 
   console.log('Running migrations...');
 
