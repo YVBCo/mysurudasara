@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { ArrowRight, Calendar, Clock, Activity } from 'lucide-react';
 
 export default function CinematicHero({ diffDays, liveEventsCount }: { diffDays: number, liveEventsCount: number }) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   
   // Target coordinates based on mouse
@@ -16,175 +17,212 @@ export default function CinematicHero({ diffDays, liveEventsCount }: { diffDays:
   const currentY = useRef(0);
   
   const rafId = useRef<number>(0);
+  const particlesRef = useRef<any[]>([]);
   
   // Prefers reduced motion
   const [reducedMotion, setReducedMotion] = useState(false);
-  // Is Mobile
   const [isMobile, setIsMobile] = useState(false);
-  
-  // For automatic drift on mobile
   const time = useRef(0);
 
   useEffect(() => {
-    // Check media queries
     const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
     setReducedMotion(motionQuery.matches);
-    
     const mobileQuery = window.matchMedia('(max-width: 768px)');
     setIsMobile(mobileQuery.matches);
     
-    if (motionQuery.matches) return;
+    if (!canvasRef.current || !containerRef.current) return;
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d', { alpha: false }); // pure black bg
+    if (!ctx) return;
 
+    // Handle Resize
+    let width = containerRef.current.clientWidth;
+    let height = containerRef.current.clientHeight;
+    canvas.width = width;
+    canvas.height = height;
+
+    const handleResize = () => {
+      if (!containerRef.current) return;
+      width = containerRef.current.clientWidth;
+      height = containerRef.current.clientHeight;
+      canvas.width = width;
+      canvas.height = height;
+    };
+    window.addEventListener('resize', handleResize);
+
+    // Mouse Tracking
     const handleMouseMove = (e: MouseEvent) => {
-      if (!containerRef.current || isMobile) return;
-      const rect = containerRef.current.getBoundingClientRect();
-      const x = (e.clientX - rect.left) / rect.width; // 0 to 1
-      const y = (e.clientY - rect.top) / rect.height; // 0 to 1
-      
-      // Map to -1 to 1
+      if (isMobile || motionQuery.matches) return;
+      const rect = canvas.getBoundingClientRect();
+      const x = (e.clientX - rect.left) / width;
+      const y = (e.clientY - rect.top) / height;
       targetX.current = (x - 0.5) * 2;
       targetY.current = (y - 0.5) * 2;
     };
+    if (!isMobile) window.addEventListener('mousemove', handleMouseMove);
 
-    if (!isMobile) {
-      window.addEventListener('mousemove', handleMouseMove);
-    }
-
-    const render = () => {
-      if (!containerRef.current) return;
+    // Generate Palace Particles from Image
+    const img = new Image();
+    img.crossOrigin = "Anonymous";
+    img.src = "https://upload.wikimedia.org/wikipedia/commons/6/6e/Mysore_Palace_Illumination.jpg";
+    
+    img.onload = () => {
+      // Offscreen canvas to read image data
+      const offscreen = document.createElement('canvas');
+      const offCtx = offscreen.getContext('2d');
+      if (!offCtx) return;
       
+      // Target bounds for Palace inside the hero (Right 70%, centered vertically)
+      const isSmall = width < 768;
+      const targetW = isSmall ? width * 0.9 : width * 0.6;
+      const targetH = isSmall ? height * 0.4 : height * 0.7;
+      
+      const aspect = img.width / img.height;
+      let drawW = targetW;
+      let drawH = drawW / aspect;
+      if (drawH > targetH) {
+        drawH = targetH;
+        drawW = drawH * aspect;
+      }
+      
+      offscreen.width = drawW;
+      offscreen.height = drawH;
+      offCtx.drawImage(img, 0, 0, drawW, drawH);
+      
+      const imgData = offCtx.getImageData(0, 0, drawW, drawH).data;
+      const particles = [];
+      
+      // Density sampling: skip pixels to form particles
+      const step = isSmall ? 4 : 3; 
+      
+      // Calculate offset to place Palace on the right side
+      const offsetX = isSmall ? (width - drawW) / 2 : width - drawW - (width * 0.05);
+      const offsetY = isSmall ? (height - drawH) : (height - drawH) / 2 + 50;
+
+      for (let y = 0; y < drawH; y += step) {
+        for (let x = 0; x < drawW; x += step) {
+          const i = (y * drawW + x) * 4;
+          const r = imgData[i];
+          const g = imgData[i + 1];
+          const b = imgData[i + 2];
+          
+          // Filter out the dark night sky
+          const luma = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+          if (luma > 30) {
+            // Apply "Mysuru Gold" toning
+            // r=212, g=175, b=55 (#D4AF37) mixed with original luminance
+            const goldR = Math.min(255, luma * 1.5 + 50);
+            const goldG = Math.min(255, luma * 1.2 + 20);
+            const goldB = Math.min(255, luma * 0.4);
+            
+            // Base coordinates
+            const baseX = x + offsetX;
+            const baseY = y + offsetY;
+            
+            // Random depth/z multiplier for 2.5D parallax
+            // Brighter pixels (domes/lights) are closer (higher z)
+            const z = (luma / 255) * 2 + Math.random() * 0.5;
+            
+            particles.push({
+              baseX,
+              baseY,
+              x: baseX,
+              y: baseY,
+              z,
+              r: goldR,
+              g: goldG,
+              b: goldB,
+              size: (luma / 255) * 1.5 + 0.5,
+              phase: Math.random() * Math.PI * 2,
+              speed: 0.02 + Math.random() * 0.03
+            });
+          }
+        }
+      }
+      particlesRef.current = particles;
+    };
+
+    // Render Loop
+    const render = () => {
       if (isMobile) {
-        // Automatic cinematic drift
         time.current += 0.005;
         currentX.current = Math.sin(time.current) * 0.5;
         currentY.current = Math.cos(time.current * 0.8) * 0.3;
       } else {
-        // Lerp towards target for smooth inertia
-        currentX.current += (targetX.current - currentX.current) * 0.05;
-        currentY.current += (targetY.current - currentY.current) * 0.05;
+        currentX.current += (targetX.current - currentX.current) * 0.08;
+        currentY.current += (targetY.current - currentY.current) * 0.08;
       }
       
-      // Calculate transforms
-      const rotateY = currentX.current * 2; // -2 to 2 degrees
-      const rotateX = -currentY.current * 1; // -1 to 1 degrees
+      // Clear background to deep navy/black
+      ctx.fillStyle = '#020305';
+      ctx.fillRect(0, 0, width, height);
       
-      // Update DOM directly for performance (bypassing React state)
-      const container = containerRef.current;
+      // Draw background glow based on camera position
+      const glowX = width * 0.7 + (currentX.current * -50);
+      const glowY = height * 0.6 + (currentY.current * -50);
+      const gradient = ctx.createRadialGradient(glowX, glowY, 0, glowX, glowY, width * 0.6);
+      gradient.addColorStop(0, 'rgba(212, 175, 55, 0.15)'); // Mysuru gold glow
+      gradient.addColorStop(1, 'rgba(2, 3, 5, 0)');
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, width, height);
+
+      // Draw Particles
+      const particles = particlesRef.current;
+      const pLen = particles.length;
       
-      // Layer 1: Background linework / far architecture (moves opposite/slowly)
-      const layer1 = container.querySelector('.parallax-bg') as HTMLElement;
-      if (layer1) layer1.style.transform = `translate3d(${currentX.current * -10}px, ${currentY.current * -10}px, 0) scale(1.05)`;
-      
-      // Layer 2: Glow
-      const layer2 = container.querySelector('.parallax-glow') as HTMLElement;
-      if (layer2) layer2.style.transform = `translate3d(${currentX.current * -5}px, ${currentY.current * -5}px, 0)`;
-      
-      // Layer 3: Palace (main subject) - subtle movement to keep full Palace in view
-      const layer3 = container.querySelector('.parallax-palace') as HTMLElement;
-      if (layer3) layer3.style.transform = `translate3d(${currentX.current * 8}px, ${currentY.current * 4}px, 0) rotateY(${rotateY}deg) rotateX(${rotateX}deg) scale(1.02)`;
-      
-      // Layer 4: Text Foreground (moves slightly in same direction to create depth against Palace)
-      const layer4 = container.querySelector('.parallax-text') as HTMLElement;
-      if (layer4) layer4.style.transform = `translate3d(${currentX.current * 5}px, ${currentY.current * 5}px, 0) rotateY(${rotateY * 0.5}deg) rotateX(${rotateX * 0.5}deg)`;
-      
-      // Layer 5: Particles
-      const particles = container.querySelectorAll('.parallax-particle');
-      particles.forEach((p, i) => {
-        const el = p as HTMLElement;
-        const depth = parseFloat(el.dataset.depth || "1");
-        el.style.transform = `translate3d(${currentX.current * 30 * depth}px, ${currentY.current * 30 * depth}px, 0)`;
-      });
+      for (let i = 0; i < pLen; i++) {
+        const p = particles[i];
+        
+        // 2.5D Parallax: offset X/Y based on Z depth and Mouse position
+        // Parallax intensity (negative means it moves opposite to mouse, creating depth)
+        const parallaxX = currentX.current * (p.z * -30);
+        const parallaxY = currentY.current * (p.z * -15);
+        
+        // Subtle floating animation if not reduced motion
+        let floatY = 0;
+        let pulse = 1;
+        if (!motionQuery.matches) {
+          p.phase += p.speed;
+          floatY = Math.sin(p.phase) * (p.z * 1.5);
+          pulse = 0.8 + Math.sin(p.phase * 2) * 0.2;
+        }
+
+        p.x = p.baseX + parallaxX;
+        p.y = p.baseY + parallaxY + floatY;
+        
+        // Draw particle
+        ctx.fillStyle = `rgba(${p.r}, ${p.g}, ${p.b}, ${pulse})`;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fill();
+      }
 
       rafId.current = requestAnimationFrame(render);
     };
-
+    
     rafId.current = requestAnimationFrame(render);
 
     return () => {
+      window.removeEventListener('resize', handleResize);
       window.removeEventListener('mousemove', handleMouseMove);
       if (rafId.current) cancelAnimationFrame(rafId.current);
     };
   }, [isMobile, reducedMotion]);
 
-  // Generate deterministic particles to avoid hydration mismatch
-  const particles = Array.from({ length: 20 }).map((_, i) => ({
-    id: i,
-    top: `${10 + (i * 47) % 80}%`,
-    left: `${5 + (i * 61) % 90}%`,
-    size: `${2 + (i % 4)}px`,
-    depth: 0.5 + (i % 10) / 10,
-    opacity: 0.2 + (i % 5) / 10,
-    delay: `${(i % 5)}s`
-  }));
-
   return (
     <section 
       ref={containerRef}
       className="relative min-h-[90vh] md:min-h-[100vh] flex flex-col justify-center overflow-hidden bg-[#020305] border-b border-brand-gold/10"
-      style={{ perspective: '1000px' }}
     >
-      {/* LAYER 1: Deep Black Atmospheric Background & Linework */}
-      <div className="absolute inset-0 z-0 parallax-bg transition-transform duration-1000 ease-out will-change-transform">
-        {/* Subtle architectural arches pattern */}
-        <div 
-          className="absolute inset-0 opacity-[0.03] mix-blend-screen"
-          style={{
-            backgroundImage: `url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M50 10c22 0 40 18 40 40v40H10V50c0-22 18-40 40-40zm0 5c-19.3 0-35 15.7-35 35v35h70V50c0-19.3-15.7-35-35-35z' fill='%23D4AF37' fill-rule='evenodd'/%3E%3C/svg%3E")`,
-            backgroundSize: '200px 200px',
-            backgroundPosition: 'center bottom'
-          }}
-        />
-      </div>
-
-      {/* LAYER 2: Golden Palace Illumination / Glow */}
-      <div className="absolute inset-0 z-0 parallax-glow transition-transform duration-1000 ease-out will-change-transform">
-         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80%] h-[80%] bg-brand-gold/10 rounded-full blur-[120px] mix-blend-screen"></div>
-         <div className="absolute bottom-0 right-0 w-[50%] h-[60%] bg-[#ff7a00]/5 rounded-full blur-[100px] mix-blend-screen"></div>
-      </div>
-
-      {/* LAYER 3: Main Palace Image - Full Visibility */}
-      <div className="absolute inset-0 z-0 parallax-palace transition-transform duration-1000 ease-out will-change-transform flex items-center justify-end pointer-events-none">
-        {/* We use mix-blend-lighten to drop the night sky naturally, acting as a perfect cutout without fading the Palace itself */}
-        <div className="w-[100%] md:w-[75%] h-[75%] absolute right-0 bottom-0 md:bottom-[10%]">
-          <img 
-            src="https://upload.wikimedia.org/wikipedia/commons/6/6e/Mysore_Palace_Illumination.jpg" 
-            alt="Mysuru Palace Illuminated" 
-            className="w-full h-full object-contain object-right-bottom mix-blend-lighten opacity-95"
-            style={{ 
-              filter: 'sepia(0.6) hue-rotate(-15deg) saturate(1.8) contrast(1.3) brightness(1.1) drop-shadow(0 0 20px rgba(212,175,55,0.2))' 
-            }}
-          />
-        </div>
-        
-        {/* Very subtle edge gradient just to ensure the text on the far left never clashes */}
-        <div className="absolute inset-0 bg-gradient-to-r from-[#020305] via-[#020305]/60 to-transparent w-[50%] z-10"></div>
-      </div>
-
-      {/* LAYER 4: Particles (Golden light specks) */}
-      {!reducedMotion && (
-        <div className="absolute inset-0 z-10 pointer-events-none overflow-hidden">
-          {particles.map(p => (
-            <div 
-              key={p.id}
-              className="parallax-particle absolute rounded-full bg-[#FFF8D6] shadow-[0_0_8px_2px_rgba(212,175,55,0.6)] animate-pulse"
-              data-depth={p.depth}
-              style={{
-                top: p.top,
-                left: p.left,
-                width: p.size,
-                height: p.size,
-                opacity: p.opacity,
-                animationDelay: p.delay,
-                animationDuration: '3s'
-              }}
-            />
-          ))}
-        </div>
-      )}
-
+      {/* LAYER 1 & 2 & 3 & 4: WebGL/Canvas Particle Engine */}
+      <canvas 
+        ref={canvasRef} 
+        className="absolute inset-0 z-0 block pointer-events-none"
+      />
+      
       {/* LAYER 5: Foreground Text Content */}
-      <div className="relative z-20 w-full px-6 md:px-12 lg:px-24 parallax-text transition-transform duration-1000 ease-out will-change-transform">
-        <div className="w-full md:w-[60%] lg:w-[50%] flex flex-col items-start pt-24 pb-16">
+      <div className="relative z-20 w-full px-6 md:px-12 lg:px-24 parallax-text transition-transform duration-100 ease-out will-change-transform">
+        <div className="w-full md:w-[60%] lg:w-[50%] flex flex-col items-start pt-24 pb-16 pointer-events-auto">
           <h2 className="text-brand-gold font-bold tracking-[0.25em] text-xs md:text-sm uppercase mb-6 flex items-center gap-3 drop-shadow-md">
             <span className="w-10 h-[1px] bg-brand-gold"></span> OFFICIAL DIGITAL EXPERIENCE
           </h2>
