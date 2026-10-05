@@ -135,7 +135,7 @@ export async function getEventById(id: string) {
 
 export async function getLiveEvents() {
   const events = await getEvents();
-  return events.filter(e => typeof e.status === 'string' && (e.status === 'LIVE NOW' || e.status === 'STARTING SOON'));
+  return events.filter((e: any) => typeof e.status === 'string' && (e.status === 'LIVE NOW' || e.status === 'STARTING SOON'));
 }
 
 export async function getPlaces() {
