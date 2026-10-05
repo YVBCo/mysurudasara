@@ -32,13 +32,13 @@ test.describe('Phase 20 - E2E Flows', () => {
   test('Visitor Authentication Flow', async ({ page }) => {
     // Login
     await page.goto(BASE_URL + '/login');
-    await page.fill('input[type="email"]', 'visitor');
+    await page.fill('input[type="text"]', 'visitor');
     await page.fill('input[type="password"]', 'password');
     await page.click('button[type="submit"]');
 
     // Should redirect to My Dasara
     await expect(page).toHaveURL(/.*my-dasara/);
-    await expect(page.locator('text=My Digital Passbook')).toBeVisible();
+    await expect(page.locator('text=My Dasara Passbook')).toBeVisible();
     
     // Logout
     await page.click('button[title="Logout"]');
@@ -48,7 +48,7 @@ test.describe('Phase 20 - E2E Flows', () => {
   test('Admin Authentication Flow', async ({ page }) => {
     // Login
     await page.goto(BASE_URL + '/login');
-    await page.fill('input[type="email"]', 'admin');
+    await page.fill('input[type="text"]', 'admin');
     await page.fill('input[type="password"]', 'password');
     await page.click('button[type="submit"]');
 
