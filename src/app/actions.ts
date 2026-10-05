@@ -139,17 +139,21 @@ export async function getLiveEvents() {
 }
 
 export async function getPlaces() {
-  const result = await db.execute('SELECT * FROM places');
-  return result.rows.map(row => ({
-    id: row.id,
-    name: row.name,
-    description: row.description,
-    category: row.category,
-    image: row.image,
-    distance: row.distance,
-    status: row.status,
-    lastVerifiedAt: row.last_verified_at
-  }));
+  try {
+    const result = await db.execute('SELECT * FROM places');
+    return result.rows.map(row => ({
+      id: row.id,
+      name: row.name,
+      description: row.description,
+      category: row.category,
+      image: row.image,
+      distance: row.distance,
+      status: row.status,
+      lastVerifiedAt: row.last_verified_at
+    }));
+  } catch {
+    return [];
+  }
 }
 
 export async function saveEvent(eventId: string, userId: string) {
