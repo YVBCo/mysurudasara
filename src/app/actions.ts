@@ -99,7 +99,7 @@ export async function getEvents(query?: string, category?: string) {
         events = events.filter((e: any) => e.title.toLowerCase().includes(query.toLowerCase()));
       }
       return events;
-    } catch(e) {
+    } catch {
       return [];
     }
   }
@@ -303,7 +303,7 @@ export async function getSession() {
   
   try {
     return JSON.parse(sessionCookie.value) as { userId: string, role: string };
-  } catch (e) {
+  } catch {
     return null;
   }
 }
