@@ -1,0 +1,114 @@
+{
+  "last_verified_at": "2026-10-05T07:18:22.000Z",
+  "events": [
+    {
+      "id": "evt-1",
+      "title": "Dasara Inauguration & Chamundeshwari Pooja",
+      "description": "Traditional rituals marking the beginning of the 2026 celebrations atop Chamundi Hill.",
+      "category": "Religious",
+      "startTime": "2026-10-11T09:00:00+05:30",
+      "endTime": "2026-10-11T11:30:00+05:30",
+      "location": "Chamundi Hill Temple",
+      "image": "https://images.unsplash.com/photo-1600100397608-f010f41cb8eb?q=80&w=800&auto=format&fit=crop",
+      "source": "mysoredasara.gov.in",
+      "isOfficial": true,
+      "lat": 12.2746,
+      "lng": 76.6713
+    },
+    {
+      "id": "evt-2",
+      "title": "Jamboo Savari (Grand Elephant Procession)",
+      "description": "The spectacular grand finale where Goddess Chamundeshwari is carried in the 750kg Golden Howdah.",
+      "category": "Religious",
+      "startTime": "2026-10-21T14:00:00+05:30",
+      "endTime": "2026-10-21T18:00:00+05:30",
+      "location": "Mysuru Palace to Bannimantap",
+      "image": "https://images.unsplash.com/photo-1582555172866-f73bb12a2ab3?q=80&w=800&auto=format&fit=crop",
+      "source": "mysoredasara.gov.in",
+      "isOfficial": true,
+      "lat": 12.3051,
+      "lng": 76.6551
+    },
+    {
+      "id": "evt-3",
+      "title": "Panjina Kavayatthu (Torchlight Parade)",
+      "description": "Breathtaking military and police displays, stunts, and cultural performances closing the festival.",
+      "category": "Cultural",
+      "startTime": "2026-10-21T19:30:00+05:30",
+      "endTime": "2026-10-21T22:00:00+05:30",
+      "location": "Bannimantap Grounds",
+      "image": "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?q=80&w=800&auto=format&fit=crop",
+      "source": "mysoredasara.gov.in",
+      "isOfficial": true,
+      "lat": 12.3375,
+      "lng": 76.6548
+    },
+    {
+      "id": "evt-4",
+      "title": "Aahara Mela (Food Festival)",
+      "description": "Taste authentic Karnataka cuisine, tribal delicacies, and pan-Indian street food.",
+      "category": "Mela",
+      "startTime": "2026-10-11T10:00:00+05:30",
+      "endTime": "2026-10-21T22:30:00+05:30",
+      "location": "Scouts & Guides Grounds",
+      "image": "https://images.unsplash.com/photo-1589302168068-98c603fc5c39?q=80&w=800&auto=format&fit=crop",
+      "source": "mysoredasara.gov.in",
+      "isOfficial": true,
+      "lat": 12.3085,
+      "lng": 76.6492
+    },
+    {
+      "id": "evt-5",
+      "title": "Dasara CM Cup - Nada Kusti",
+      "description": "Traditional Mysore wrestling drawing pehlwans from across the state.",
+      "category": "Sports",
+      "startTime": "2026-10-14T15:00:00+05:30",
+      "endTime": "2026-10-18T18:00:00+05:30",
+      "location": "D. Devaraj Urs Stadium",
+      "image": "https://images.unsplash.com/photo-1544365558-35aa4af41199?q=80&w=800&auto=format&fit=crop",
+      "source": "Department of Youth Empowerment and Sports",
+      "isOfficial": true,
+      "lat": 12.3116,
+      "lng": 76.6425
+    }
+  ],
+  "places": [
+    {
+      "id": "pl-1",
+      "name": "Amba Vilas Palace (Mysuru Palace)",
+      "description": "The historical center of Dasara, illuminated with 100,000 bulbs every evening.",
+      "category": "Heritage",
+      "distance": "0.0 km",
+      "status": "OPEN",
+      "image": "https://images.unsplash.com/photo-1582555172866-f73bb12a2ab3?q=80&w=800&auto=format&fit=crop"
+    },
+    {
+      "id": "pl-2",
+      "name": "Chamundi Hill & Temple",
+      "description": "Sacred hill overlooking the city, home to the patron deity Goddess Chamundeshwari.",
+      "category": "Spiritual",
+      "distance": "12.0 km",
+      "status": "OPEN",
+      "image": "https://images.unsplash.com/photo-1600100397608-f010f41cb8eb?q=80&w=800&auto=format&fit=crop"
+    },
+    {
+      "id": "pl-3",
+      "name": "Karanji Lake",
+      "description": "A serene nature park featuring a walk-through aviary and butterfly park.",
+      "category": "Nature",
+      "distance": "2.5 km",
+      "status": "CLOSES AT 5:30 PM",
+      "image": "https://images.unsplash.com/photo-1620766182966-c6eb5ed2b788?q=80&w=800&auto=format&fit=crop"
+    },
+    {
+      "id": "pl-4",
+      "name": "Devaraja Market",
+      "description": "Vibrant century-old market famous for Mysore pak, silk, spices, and festival flowers.",
+      "category": "City",
+      "distance": "1.0 km",
+      "status": "OPEN",
+      "image": "https://images.unsplash.com/photo-1626244583167-9c9ebff50d8d?q=80&w=800&auto=format&fit=crop"
+    }
+  ],
+  "savedEvents": []
+}

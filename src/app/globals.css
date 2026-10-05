@@ -1,26 +1,80 @@
 @import "tailwindcss";
 
+@theme {
+  --color-brand-bg: #050609;
+  --color-brand-surface: #0A0D14;
+  --color-brand-card: #111827;
+  --color-brand-gold: #D4AF37;
+  --color-brand-gold-dark: #AA8222;
+  --color-brand-ivory: #F8F5F0;
+  --color-brand-red: #8B1E1E;
+}
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --background: #050609;
+  --foreground: #F8F5F0;
 }
 
 body {
-  background: var(--background);
+  background-color: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-inter), sans-serif;
+}
+
+h1, h2, h3, h4, h5, h6, .font-serif {
+  font-family: var(--font-playfair), serif;
+}
+
+/* Premium Heritage Cinematic UI */
+.glass-panel {
+  background: rgba(17, 24, 39, 0.6); /* #111827 with opacity */
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(212, 175, 55, 0.15); /* Subtle gold border */
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
+.glass-panel-solid {
+  background: #111827;
+  border: 1px solid rgba(212, 175, 55, 0.15);
+}
+
+.hero-cinematic {
+  /* Using a stunning illuminated Mysuru Palace shot */
+  background-image: linear-gradient(to bottom, rgba(5, 6, 9, 0.3), rgba(5, 6, 9, 0.8) 70%, rgba(5, 6, 9, 1)), url('https://images.unsplash.com/photo-1582555172866-f73bb12a2ab3?q=100&w=2560&auto=format&fit=crop');
+  background-size: cover;
+  background-position: center 30%;
+  background-attachment: fixed;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Badges */
+.badge-official {
+  background: rgba(212, 175, 55, 0.15);
+  border: 1px solid rgba(212, 175, 55, 0.5);
+  color: #D4AF37;
+}
+
+.badge-community {
+  background: rgba(59, 130, 246, 0.15);
+  border: 1px solid rgba(59, 130, 246, 0.5);
+  color: #93C5FD;
+}
+
+.badge-ai {
+  background: rgba(168, 85, 247, 0.15);
+  border: 1px solid rgba(168, 85, 247, 0.5);
+  color: #D8B4FE;
+}
+
+/* Dark Mode Leaflet Map Tiles */
+.dark-map-tiles {
+  filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);
 }
