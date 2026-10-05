@@ -279,6 +279,7 @@ export async function logoutAction() {
   const cookieStore = await cookies();
   cookieStore.delete('dasara_session');
   revalidatePath('/', 'layout');
+  redirect('/login');
 }
 
 export async function getSession() {
