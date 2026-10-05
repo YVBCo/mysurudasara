@@ -42,6 +42,28 @@ export function middleware(request: NextRequest) {
     }
   }
 
+  // Protect Organizer routes
+  if (path.startsWith('/organizer')) {
+    if (!session) return NextResponse.redirect(new URL('/login', request.url));
+    try {
+      const parsed = JSON.parse(session.value);
+      if (parsed.role !== 'ORGANIZER' && parsed.role !== 'ADMIN' && parsed.role !== 'SUPER_ADMIN') {
+        return NextResponse.redirect(new URL('/my-dasara', request.url));
+      }
+    } catch { return NextResponse.redirect(new URL('/login', request.url)); }
+  }
+
+  // Protect Moderator routes
+  if (path.startsWith('/moderator')) {
+    if (!session) return NextResponse.redirect(new URL('/login', request.url));
+    try {
+      const parsed = JSON.parse(session.value);
+      if (parsed.role !== 'MODERATOR' && parsed.role !== 'ADMIN' && parsed.role !== 'SUPER_ADMIN') {
+        return NextResponse.redirect(new URL('/my-dasara', request.url));
+      }
+    } catch { return NextResponse.redirect(new URL('/login', request.url)); }
+  }
+
   // Redirect authenticated users away from Login
   if (path === '/login') {
     if (session) {
@@ -49,6 +71,8 @@ export function middleware(request: NextRequest) {
         const parsed = JSON.parse(session.value);
         if (parsed.role === 'ADMIN') return NextResponse.redirect(new URL('/admin', request.url));
         if (parsed.role === 'VENDOR') return NextResponse.redirect(new URL('/vendor-dashboard', request.url));
+        if (parsed.role === 'ORGANIZER') return NextResponse.redirect(new URL('/organizer', request.url));
+        if (parsed.role === 'MODERATOR') return NextResponse.redirect(new URL('/moderator', request.url));
         return NextResponse.redirect(new URL('/my-dasara', request.url));
       } catch {
         // invalid session
@@ -60,5 +84,5 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/admin/:path*', '/my-dasara/:path*', '/vendor-dashboard/:path*', '/login'],
+  matcher: ['/admin/:path*', '/my-dasara/:path*', '/vendor-dashboard/:path*', '/organizer/:path*', '/moderator/:path*', '/login'],
 };

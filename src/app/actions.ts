@@ -253,8 +253,14 @@ export async function loginAction(email: string, password: string) {
   } else if (email.toLowerCase() === 'vendor') {
     role = 'VENDOR';
     redirect = '/vendor-dashboard';
+  } else if (email.toLowerCase() === 'organizer') {
+    role = 'ORGANIZER';
+    redirect = '/organizer';
+  } else if (email.toLowerCase() === 'moderator') {
+    role = 'MODERATOR';
+    redirect = '/moderator';
   } else if (email.toLowerCase() !== 'visitor') {
-    return { success: false, error: 'User not found. Try visitor, admin, or vendor.' };
+    return { success: false, error: 'User not found. Try visitor, admin, vendor, organizer, or moderator.' };
   }
 
   // Create a secure httpOnly cookie session
@@ -323,5 +329,87 @@ export async function getProducts(vendorId: string) {
     }));
   } catch {
     return [];
+  }
+}
+
+// ----------------------------------------------------
+// ORGANIZER & ADMIN ACTIONS
+// ----------------------------------------------------
+
+export async function createEvent(formData: FormData) {
+  const session = await getSession();
+  if (!session || (session.role !== 'ORGANIZER' && session.role !== 'ADMIN')) {
+    return { success: false, error: 'Unauthorized' };
+  }
+
+  const title = formData.get('title') as string;
+  const category = formData.get('category') as string;
+  const startTime = formData.get('startTime') as string;
+  const endTime = formData.get('endTime') as string;
+  const venue = formData.get('venue') as string;
+
+  if (!title || !startTime || !endTime) return { success: false, error: 'Missing required fields' };
+
+  try {
+    await db.execute({
+      sql: `INSERT INTO events (id, title, category, start_time, end_time, venue, status, source_name, source_type, last_verified_at) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      args: [
+        `evt-${Date.now()}`, title, category || 'Cultural', startTime, endTime, venue || 'Mysuru', 
+        'SCHEDULED', 'Organizer Dashboard', 'OFFICIAL', new Date().toISOString()
+      ]
+    });
+    revalidatePath('/events');
+    revalidatePath('/organizer');
+    return { success: true };
+  } catch (e: any) {
+    return { success: false, error: e.message };
+  }
+}
+
+export async function deleteEvent(eventId: string) {
+  const session = await getSession();
+  if (!session || session.role !== 'ADMIN') return { success: false, error: 'Unauthorized' };
+
+  try {
+    await db.execute({ sql: 'DELETE FROM events WHERE id = ?', args: [eventId] });
+    revalidatePath('/events');
+    revalidatePath('/admin');
+    return { success: true };
+  } catch {
+    return { success: false, error: 'Failed to delete event' };
+  }
+}
+
+export async function createClosure(formData: FormData) {
+  const session = await getSession();
+  if (!session || (session.role !== 'ORGANIZER' && session.role !== 'ADMIN')) return { success: false, error: 'Unauthorized' };
+
+  const road = formData.get('road') as string;
+  const reason = formData.get('reason') as string;
+  try {
+    await db.execute({
+      sql: 'INSERT INTO road_closures (id, road, reason, last_updated) VALUES (?, ?, ?, ?)',
+      args: [`closure-${Date.now()}`, road, reason, new Date().toISOString()]
+    });
+    return { success: true };
+  } catch {
+    return { success: false, error: 'Failed to create closure' };
+  }
+}
+
+export async function createShuttle(formData: FormData) {
+  const session = await getSession();
+  if (!session || (session.role !== 'ORGANIZER' && session.role !== 'ADMIN')) return { success: false, error: 'Unauthorized' };
+
+  const route = formData.get('route') as string;
+  try {
+    await db.execute({
+      sql: 'INSERT INTO shuttles (id, route, last_updated) VALUES (?, ?, ?)',
+      args: [`shuttle-${Date.now()}`, route, new Date().toISOString()]
+    });
+    return { success: true };
+  } catch {
+    return { success: false, error: 'Failed to create shuttle' };
   }
 }
