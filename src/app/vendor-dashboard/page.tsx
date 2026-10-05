@@ -36,7 +36,7 @@ export default async function VendorDashboard() {
             <h2 className="text-xl font-serif font-bold text-brand-ivory flex items-center gap-2"><Package size={20}/> Product Inventory</h2>
             
             {/* Add Product Form (Server Action) */}
-            <form action={addProduct} className="flex gap-2 w-full md:w-auto">
+            <form action={async (formData) => { "use server"; await addProduct(formData); }} className="flex gap-2 w-full md:w-auto">
               <input type="text" name="name" placeholder="Product Name" required className="bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-brand-ivory focus:outline-none focus:border-brand-gold w-full md:w-40" />
               <input type="text" name="price" placeholder="Price (₹)" required className="bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-brand-ivory focus:outline-none focus:border-brand-gold w-full md:w-24" />
               <button type="submit" className="bg-brand-gold text-brand-navy font-bold px-4 py-2 rounded-lg text-sm hover:bg-[#FFF8D6] transition-colors whitespace-nowrap">
