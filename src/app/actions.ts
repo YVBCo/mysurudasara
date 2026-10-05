@@ -3,6 +3,7 @@
 import { db } from '@/lib/db';
 import { revalidatePath } from 'next/cache';
 import { differenceInDays, formatDistanceToNow, isAfter, isBefore } from 'date-fns';
+import { redirect } from 'next/navigation';
 
 function calculateStatus(startTimeStr: string, endTimeStr: string, officialStatus: string) {
   if (['DELAYED', 'CANCELLED', 'COMPLETED'].includes(officialStatus)) {
