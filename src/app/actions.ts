@@ -48,20 +48,20 @@ export async function getEvents(query?: string, category?: string) {
   const result = await db.execute({ sql, args });
   
   return result.rows.map(row => ({
-    id: row.id,
-    title: row.title,
-    description: row.description,
-    category: row.category,
-    startTime: row.start_time,
-    endTime: row.end_time,
-    venue: row.venue,
-    location: row.location,
-    lat: row.lat,
-    lng: row.lng,
-    image: row.image,
-    source: row.source_name,
+    id: row.id as string,
+    title: row.title as string,
+    description: row.description as string,
+    category: row.category as string,
+    startTime: row.start_time as string,
+    endTime: row.end_time as string,
+    venue: row.venue as string,
+    location: row.location as string,
+    lat: row.lat as number,
+    lng: row.lng as number,
+    image: row.image as string,
+    source: row.source_name as string,
     isOfficial: row.source_type === 'OFFICIAL',
-    lastVerifiedAt: row.last_verified_at,
+    lastVerifiedAt: row.last_verified_at as string,
     status: calculateStatus(row.start_time as string, row.end_time as string, row.status as string)
   }));
 }
@@ -76,20 +76,20 @@ export async function getEventById(id: string) {
   const row = result.rows[0];
 
   return {
-    id: row.id,
-    title: row.title,
-    description: row.description,
-    category: row.category,
-    startTime: row.start_time,
-    endTime: row.end_time,
-    venue: row.venue,
-    location: row.location,
-    lat: row.lat,
-    lng: row.lng,
-    image: row.image,
-    source: row.source_name,
+    id: row.id as string,
+    title: row.title as string,
+    description: row.description as string,
+    category: row.category as string,
+    startTime: row.start_time as string,
+    endTime: row.end_time as string,
+    venue: row.venue as string,
+    location: row.location as string,
+    lat: row.lat as number,
+    lng: row.lng as number,
+    image: row.image as string,
+    source: row.source_name as string,
     isOfficial: row.source_type === 'OFFICIAL',
-    lastVerifiedAt: row.last_verified_at,
+    lastVerifiedAt: row.last_verified_at as string,
     status: calculateStatus(row.start_time as string, row.end_time as string, row.status as string)
   };
 }
@@ -148,20 +148,20 @@ export async function getSavedEvents(userId: string) {
   });
 
   return result.rows.map(row => ({
-    id: row.id,
-    title: row.title,
-    description: row.description,
-    category: row.category,
-    startTime: row.start_time,
-    endTime: row.end_time,
-    venue: row.venue,
-    location: row.location,
-    lat: row.lat,
-    lng: row.lng,
-    image: row.image,
-    source: row.source_name,
+    id: row.id as string,
+    title: row.title as string,
+    description: row.description as string,
+    category: row.category as string,
+    startTime: row.start_time as string,
+    endTime: row.end_time as string,
+    venue: row.venue as string,
+    location: row.location as string,
+    lat: row.lat as number,
+    lng: row.lng as number,
+    image: row.image as string,
+    source: row.source_name as string,
     isOfficial: row.source_type === 'OFFICIAL',
-    lastVerifiedAt: row.last_verified_at,
+    lastVerifiedAt: row.last_verified_at as string,
     status: calculateStatus(row.start_time as string, row.end_time as string, row.status as string)
   }));
 }

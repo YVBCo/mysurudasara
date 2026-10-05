@@ -66,7 +66,7 @@ export default async function EventDetailPage({ params }: { params: Promise<{ id
                 <div className="w-12 h-12 rounded-full bg-brand-gold/10 text-brand-gold flex items-center justify-center shrink-0"><Calendar size={24} /></div>
                 <div>
                   <h3 className="font-bold text-brand-navy dark:text-brand-ivory">Date & Time</h3>
-                  <p className="text-slate-600 dark:text-slate-400 mt-1">{event.date} • {event.time}</p>
+                  <p className="text-slate-600 dark:text-slate-400 mt-1">{new Date(event.startTime).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'long', timeStyle: 'short' })}</p>
                 </div>
               </div>
               <div className="flex items-start gap-4">
