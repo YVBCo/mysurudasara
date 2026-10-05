@@ -15,7 +15,7 @@ export default function CinematicHero({ diffDays, liveEventsCount }: { diffDays:
   const currentX = useRef(0);
   const currentY = useRef(0);
   
-  const rafId = useRef<number>();
+  const rafId = useRef<number>(0);
   
   // Prefers reduced motion
   const [reducedMotion, setReducedMotion] = useState(false);
