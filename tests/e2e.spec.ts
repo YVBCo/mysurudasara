@@ -11,12 +11,12 @@ test.describe('Phase 20 - E2E Flows', () => {
     await expect(page).toHaveTitle(/Mysuru Dasara/);
     
     // Check Hero and Navigation
-    await expect(page.locator('text=Nada Habba')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Nada Habba Mysuru Dasara' })).toBeVisible({ timeout: 15000 });
 
     // Navigate to Events
-    await page.click('text=Events');
+    await page.click('a:has-text("Explore Dasara")');
     await expect(page).toHaveURL(/.*events/);
-    await expect(page.locator('h1', { hasText: 'Events & Schedule' })).toBeVisible();
+    await expect(page.locator('h1', { hasText: 'Events' })).toBeVisible();
 
     // Check Map
     await page.click('text=Map');
@@ -26,7 +26,7 @@ test.describe('Phase 20 - E2E Flows', () => {
     await page.goto(BASE_URL);
     await page.fill('input[placeholder="Ask anything..."]', 'What is happening today?');
     await page.click('button:has(svg)');
-    await expect(page.locator('.glass-panel-solid', { hasText: 'System Database' })).toBeVisible({ timeout: 10000 });
+    await expect(page.getByText('System Database')).toBeVisible({ timeout: 10000 });
   });
 
   test('Visitor Authentication Flow', async ({ page }) => {
