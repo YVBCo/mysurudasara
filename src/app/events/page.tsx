@@ -23,7 +23,19 @@ export default async function EventsPage({
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div>
             <h1 className="text-4xl md:text-5xl font-serif font-bold text-brand-ivory mb-2">Events & Programs</h1>
-            <p className="text-brand-ivory/60">Discover cultural, religious, and entertainment events</p>
+            <p className="text-brand-ivory/60 mb-3">Discover cultural, religious, and entertainment events</p>
+            <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest">
+              <span className="text-brand-ivory/40">Data Source Status:</span>
+              {events.length > 0 ? (
+                <span className="text-green-400 bg-green-500/10 px-2 py-1 rounded border border-green-500/20 flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse"></span> HEALTHY
+                </span>
+              ) : (
+                <span className="text-red-400 bg-red-500/10 px-2 py-1 rounded border border-red-500/20 flex items-center gap-1">
+                   UNAVAILABLE
+                </span>
+              )}
+            </div>
           </div>
           <SearchEvents />
         </div>
