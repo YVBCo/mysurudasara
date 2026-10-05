@@ -79,9 +79,9 @@ export default function CinematicHero({ diffDays, liveEventsCount }: { diffDays:
       const layer2 = container.querySelector('.parallax-glow') as HTMLElement;
       if (layer2) layer2.style.transform = `translate3d(${currentX.current * -5}px, ${currentY.current * -5}px, 0)`;
       
-      // Layer 3: Palace (main subject)
+      // Layer 3: Palace (main subject) - subtle movement to keep full Palace in view
       const layer3 = container.querySelector('.parallax-palace') as HTMLElement;
-      if (layer3) layer3.style.transform = `translate3d(${currentX.current * 15}px, ${currentY.current * 10}px, 0) rotateY(${rotateY}deg) rotateX(${rotateX}deg) scale(1.05)`;
+      if (layer3) layer3.style.transform = `translate3d(${currentX.current * 8}px, ${currentY.current * 4}px, 0) rotateY(${rotateY}deg) rotateX(${rotateX}deg) scale(1.02)`;
       
       // Layer 4: Text Foreground (moves slightly in same direction to create depth against Palace)
       const layer4 = container.querySelector('.parallax-text') as HTMLElement;
@@ -142,29 +142,22 @@ export default function CinematicHero({ diffDays, liveEventsCount }: { diffDays:
          <div className="absolute bottom-0 right-0 w-[50%] h-[60%] bg-[#ff7a00]/5 rounded-full blur-[100px] mix-blend-screen"></div>
       </div>
 
-      {/* LAYER 3: Main Palace Image */}
-      <div className="absolute inset-0 z-0 parallax-palace transition-transform duration-1000 ease-out will-change-transform flex items-center justify-end md:justify-center">
-        {/* We use a masking gradient so the image fades smoothly into the black background */}
-        <div 
-          className="w-full h-full md:w-[120%] md:h-[120%] md:-right-[10%] relative opacity-80"
-          style={{
-            maskImage: 'linear-gradient(to right, transparent 0%, black 40%, black 80%, transparent 100%), linear-gradient(to bottom, transparent 0%, black 30%, black 70%, transparent 100%)',
-            WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 40%, black 80%, transparent 100%), linear-gradient(to bottom, transparent 0%, black 30%, black 70%, transparent 100%)',
-            maskComposite: 'intersect',
-            WebkitMaskComposite: 'source-in'
-          }}
-        >
+      {/* LAYER 3: Main Palace Image - Full Visibility */}
+      <div className="absolute inset-0 z-0 parallax-palace transition-transform duration-1000 ease-out will-change-transform flex items-center justify-end pointer-events-none">
+        {/* We use mix-blend-lighten to drop the night sky naturally, acting as a perfect cutout without fading the Palace itself */}
+        <div className="w-[100%] md:w-[75%] h-[75%] absolute right-0 bottom-0 md:bottom-[10%]">
           <img 
             src="https://upload.wikimedia.org/wikipedia/commons/6/6e/Mysore_Palace_Illumination.jpg" 
             alt="Mysuru Palace Illuminated" 
-            className="w-full h-full object-cover md:object-contain object-right md:object-center mix-blend-lighten"
-            style={{ filter: 'contrast(1.2) sepia(0.2) hue-rotate(-10deg) brightness(0.9)' }}
+            className="w-full h-full object-contain object-right-bottom mix-blend-lighten opacity-95"
+            style={{ 
+              filter: 'sepia(0.6) hue-rotate(-15deg) saturate(1.8) contrast(1.3) brightness(1.1) drop-shadow(0 0 20px rgba(212,175,55,0.2))' 
+            }}
           />
         </div>
         
-        {/* Overlay gradient to ensure text readability on the left */}
-        <div className="absolute inset-0 bg-gradient-to-r from-[#020305] via-[#020305]/80 to-transparent z-10"></div>
-        <div className="absolute inset-0 bg-gradient-to-t from-[#020305] via-transparent to-[#020305]/60 z-10"></div>
+        {/* Very subtle edge gradient just to ensure the text on the far left never clashes */}
+        <div className="absolute inset-0 bg-gradient-to-r from-[#020305] via-[#020305]/60 to-transparent w-[50%] z-10"></div>
       </div>
 
       {/* LAYER 4: Particles (Golden light specks) */}
