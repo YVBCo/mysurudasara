@@ -212,3 +212,59 @@ export async function askAI(question: string) {
     timestamp: new Date().toISOString()
   };
 }
+
+// ----------------------------------------------------
+// AUTHENTICATION & ROLE SYSTEM
+// ----------------------------------------------------
+import { cookies } from 'next/headers';
+
+export async function loginAction(email: string, password: string) {
+  // Simulate a real DB user lookup and password hash comparison
+  await new Promise(resolve => setTimeout(resolve, 800)); // Network delay simulation
+
+  if (password !== 'password') {
+    return { success: false, error: 'Invalid credentials. Hint: use password' };
+  }
+
+  let role = 'VISITOR';
+  let redirect = '/my-dasara';
+
+  if (email.toLowerCase() === 'admin') {
+    role = 'ADMIN';
+    redirect = '/admin';
+  } else if (email.toLowerCase() === 'vendor') {
+    role = 'VENDOR';
+    redirect = '/vendor-dashboard';
+  } else if (email.toLowerCase() !== 'visitor') {
+    return { success: false, error: 'User not found. Try visitor, admin, or vendor.' };
+  }
+
+  // Create a secure httpOnly cookie session
+  const cookieStore = await cookies();
+  cookieStore.set('dasara_session', JSON.stringify({ userId: email, role }), {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    maxAge: 60 * 60 * 24 * 7, // 1 week
+    path: '/',
+  });
+
+  return { success: true, redirect };
+}
+
+export async function logoutAction() {
+  const cookieStore = await cookies();
+  cookieStore.delete('dasara_session');
+  revalidatePath('/', 'layout');
+}
+
+export async function getSession() {
+  const cookieStore = await cookies();
+  const sessionCookie = cookieStore.get('dasara_session');
+  if (!sessionCookie) return null;
+  
+  try {
+    return JSON.parse(sessionCookie.value) as { userId: string, role: string };
+  } catch (e) {
+    return null;
+  }
+}
