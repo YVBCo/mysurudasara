@@ -5,6 +5,7 @@ import {
 import { getLiveEvents, getEvents, getPlaces } from "@/app/actions";
 import AIAssistant from "@/components/AIAssistant";
 import MapWrapper from "@/components/MapWrapper";
+import CinematicHero from "@/components/CinematicHero";
 
 export default async function Home() {
   const liveEvents = await getLiveEvents();
@@ -21,54 +22,7 @@ export default async function Home() {
     <div className="flex flex-col min-h-screen bg-brand-bg">
       
       {/* 2 & 3. HERO — COMPLETELY REBUILT CINEMATIC MYSURU PALACE */}
-      <section className="relative hero-cinematic min-h-[90vh] flex flex-col justify-center border-b border-brand-gold/20">
-        <div className="absolute inset-0 bg-gradient-to-r from-brand-bg via-brand-bg/80 to-transparent z-0"></div>
-        <div className="absolute inset-0 bg-gradient-to-t from-brand-bg via-transparent to-transparent z-0"></div>
-
-        <div className="relative z-10 w-full px-6 md:px-12 lg:px-24 flex flex-col md:flex-row items-center justify-between">
-          
-          {/* LEFT SIDE: Typography and Actions */}
-          <div className="w-full md:w-1/2 flex flex-col items-start pt-20 pb-10">
-            <h2 className="text-brand-gold font-bold tracking-[0.2em] text-sm md:text-md uppercase mb-4 flex items-center gap-2">
-              <span className="w-8 h-[1px] bg-brand-gold"></span> MYSURU DASARA 2026
-            </h2>
-            
-            <div className="inline-flex items-center gap-2 bg-brand-surface/80 backdrop-blur-md border border-white/10 text-white px-4 py-1.5 rounded-full text-xs font-bold mb-6 uppercase tracking-wider">
-              {diffDays > 0 ? (
-                <><Clock size={14} className="text-brand-gold" /> Dasara begins in {diffDays} days</>
-              ) : liveEvents.length > 0 ? (
-                <><span className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span> LIVE NOW</>
-              ) : (
-                <><Activity size={14} className="text-brand-gold" /> Festival Ongoing</>
-              )}
-            </div>
-            
-            <h1 className="text-5xl md:text-7xl lg:text-[5.5rem] font-serif font-bold mb-6 text-brand-ivory drop-shadow-2xl leading-[1.05] tracking-tight">
-              Nada Habba<br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-gold to-[#FFF8D6]">Mysuru Dasara</span>
-            </h1>
-            
-            <p className="text-lg md:text-xl text-brand-ivory/80 mb-10 max-w-xl font-light leading-relaxed border-l-2 border-brand-gold/50 pl-6">
-              Everything happening in Mysuru Dasara.<br/>
-              Everything you need to experience it.
-            </p>
-            
-            <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
-              <Link href="/events" className="bg-brand-gold hover:bg-[#FFF8D6] text-brand-navy font-bold text-lg px-8 py-4 rounded-lg flex items-center justify-center gap-2 transition-all shadow-[0_0_20px_rgba(212,175,55,0.3)]">
-                Explore Dasara <ArrowRight size={20} />
-              </Link>
-              <Link href="/my-dasara" className="glass-panel text-brand-ivory hover:bg-white/10 font-bold text-lg px-8 py-4 rounded-lg flex items-center justify-center gap-2 transition-all">
-                <Calendar size={20} /> Plan My Day
-              </Link>
-            </div>
-          </div>
-
-          {/* RIGHT SIDE: Empty spacing to let the Palace background shine through */}
-          <div className="w-full md:w-1/2 h-full hidden md:block">
-            {/* The background image shows the palace here vividly due to the gradient mask */}
-          </div>
-        </div>
-      </section>
+      <CinematicHero diffDays={diffDays} liveEventsCount={liveEvents.length} />
 
       {/* 4. HERO QUICK DISCOVERY */}
       <div className="relative z-20 -mt-16 px-6 md:px-12 max-w-[1400px] mx-auto w-full mb-20">
